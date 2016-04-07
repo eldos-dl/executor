@@ -6,7 +6,7 @@
     <base href="/">
     <link rel="stylesheet" href="static/css/bootstrap.min.css">
     <link rel="stylesheet" href="static/css/style.css">
-    <script type="text/javascript"src="static/js/jquery-1.12.3.min.js"></script>
+    <script type="text/javascript" src="static/js/jquery-1.12.3.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 </head>
 <body>
@@ -25,10 +25,11 @@
             <div class="row gap" style="background-color: transparent;border-color: transparent"></div>
             <div class="row">
                 <div class="col-md-6">
-                    <form>
-                        <input name="lname" type="email" class="col-md-8 col-md-push-1" placeholder="Email">
-                        <input name="uname" type="text" class="col-md-8 col-md-push-1" placeholder="Username">
-                        <input name="pass" type="password" class="col-md-8 col-md-push-1" placeholder="Password">
+                    <form action="/accounts/signup/" method="post">
+                         {% csrf_token %}
+                        <input name="email" type="email" class="col-md-8 col-md-push-1" placeholder="Email">
+                        <input name="username" type="text" class="col-md-8 col-md-push-1" placeholder="Username">
+                        <input name="password" type="password" class="col-md-8 col-md-push-1" placeholder="Password">
                         <input type="password" class="col-md-8 col-md-push-1" placeholder="Confirm password">
                         <label class="checkbox col-md-6 col-md-push-1">
                             <input type="checkbox"> I agree to Terms and Conditions
@@ -37,9 +38,10 @@
                     </form>
                 </div>
                 <div class="col-md-6">
-                    <form>
-                        <input name="uname" type="text" class="col-md-8 col-md-push-3" placeholder="Username">
-                        <input name="pass" type="password" class="col-md-8 col-md-push-3" placeholder="Password">
+                    <form action="/accounts/login/" method="post">
+                         {% csrf_token %}
+                        <input name="username" type="text" class="col-md-8 col-md-push-3" placeholder="Username">
+                        <input name="password" type="password" class="col-md-8 col-md-push-3" placeholder="Password">
                         <label class="checkbox col-md-8 col-md-push-3">
                             <input type="checkbox"> Remember me
                         </label>
