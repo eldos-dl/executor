@@ -1,0 +1,72 @@
+@font-face {
+    font-family: 'OpenSans Light';
+    src: url('/static/fonts/OpenSans-Light-webfont.woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+*:focus {
+    outline: none;
+}
+
+* {
+    font-family: OpenSans Light;
+}
+
+
+.shade {
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.14), 0 4px 8px rgba(0, 0, 0, 0.28);
+}
+
+/*button:hover {*/
+/*box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);*/
+/*}*/
+.gap {
+    min-height: 20px;
+    padding: 19px;
+    margin-bottom: 20px;
+}
+.back-img {
+    background-image: url('/static/imgs/background0.png');
+    background-size: 100% 40em;
+    background-repeat: no-repeat;
+    background-position: 0em -5em;
+}
+label{
+    font-size: 12px;
+}
+input {
+    font-size: 17px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    margin: 5px;
+    border-radius: 5px;
+    border: 0em solid;
+    padding: 9px 9px 9px 9px;
+}
+
+.btn {
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    border: 0px solid;
+    font-size: 17px;
+    font-variant: small-caps;
+}
+
+.btn-primary {
+    background-color: rgba(33, 150, 243, 1);
+}
+
+.btn-primary:hover {
+    background-color: rgba(30, 136, 229, 1);
+}
+
+.btn-default:hover {
+    background-color: rgba(238, 238, 238, 1);
+}
+
+.container-fluid {
+    padding: 0em;
+}
