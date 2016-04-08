@@ -4,7 +4,6 @@
 *.pyc
 __pycache__
 .idea/
-db.sqlite3
 .venv/
 .ipynb_checkpoints/
 *.ipynb
