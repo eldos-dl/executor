@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'scheduler',
     'ui',
+    'kombu.transport.django',
 ]
 
 MIDDLEWARE_CLASSES = [

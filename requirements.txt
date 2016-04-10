@@ -2,3 +2,4 @@ Django==1.9.4
 psutil==4.1.0
 djangorestframework==3.3.3
 celery==3.1.23
+kombu==3.0.35

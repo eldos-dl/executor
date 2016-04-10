@@ -7,3 +7,5 @@ __pycache__
 .venv/
 .ipynb_checkpoints/
 *.ipynb
+celerybeat-schedule
+celerybeat.pid
