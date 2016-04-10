@@ -21,5 +21,5 @@ sudo -H pip install -r requirements.txt
 ## Starting Development Server
 
 ```
-python manage.py runserver 0.0.0.0
+python manage.py runserver 0.0.0.0:8000
 ```
