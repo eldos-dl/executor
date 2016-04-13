@@ -124,6 +124,5 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-
-SLAVES = ['127.0.0.1:8080']
-MASTER = '127.0.0.1:8080'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+MEDIA_URL = '/media/'

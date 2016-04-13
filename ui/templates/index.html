@@ -6,12 +6,21 @@
     <base href="/">
     <link rel="stylesheet" href="static/css/bootstrap.min.css">
     <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/font-awesome.min.css">
     <script type="text/javascript"src="static/js/jquery-1.12.3.min.js"></script>
+
+    <script type="text/javascript" src="static/js/angular.min.js"></script>
+    <script type="text/javascript" src="static/js/ng-file-upload.min.js"></script>
+    <script type="text/javascript" src="static/js/ng-file-upload-shim.min.js"></script>
+
+    <script type="text/javascript" src="static/js/app/index.js"></script>
+    <script type="text/javascript" src="static/js/app/controllers.js"></script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 </head>
 <body>
-    <div class="container-fluid back-img">
-        <div class="navbar shade navbar-default">
+    <div class="container-fluid">
+        <div class="navbar shade navbar-default top-bar">
             <div class="container">
                 <a href="/" class="navbar-brand">Distributed Code Executor</a>
                 <ul class="nav navbar-nav navbar-right nav-pills">
@@ -29,6 +38,42 @@
             </div>
         </div>
     </div>
+    {% verbatim %}
+    <div class="container-fluid dashboard" ng-app="drive">
+        <div class="secondary-navbar shade">
+                <div class="col-md-2"></div>
+                <div class="col-md-10">
+                    <ul class="nav navbar-nav navbar-left nav-pills secondary-nav">
+                        <li>
+                            <a href="#" data-toggle="dropdown">
+                                <i class="fa fa-cloud-upload" aria-hidden="true"></i>
+                                Upload<span class='caret'></span>
+                            </a>
+                            <ul class="dropdown-menu" ng-controller="UploadController">
+                                <li><label for="exec-files">Executable Files<input type="file" id="exec-files" ngf-select="uploadFiles($files, $invalidFiles, 'E')" multiple></label></li>
+                                <li><label for="io-files">Input Files<input type="file" id="io-files" ngf-select="uploadFiles($files, $invalidFiles, 'I')" multiple></label></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        <div class="col-md-2"></div>
+        <div class="col-md-10 grey tall" ng-controller="FilesController" style="padding: 3em;">
+            <div ng-repeat="file in userFiles" class="file-details text-center">
+                <div class="col-md-1 thumb-nail">
+                    <i class="fa fa-file-text" aria-hidden="true" ng-show="file.type=='I'"></i>
+                    <i class="fa fa-file-code-o" aria-hidden="true" ng-show="file.type=='E'"></i>
+                </div>
+                <div class="col-md-4 bold text-left">
+                    <span style="padding-left: 50px">{{ file.name }}</span>
+                </div>
+                <div class="col-md-2 light">{{ file.last_updated | date:'MMM d, y' }}</div>
+                <div class="col-md-2 light">{{ file.last_updated | date:'h:mm a' }}</div>
+                <div class="col-md-2 light">{{ file.size | bytes }}</div>
+            </div>
+        </div>
+    </div>
+    {% endverbatim %}
 </body>
     <script src="static/js/bootstrap.min.js"></script>
 </html>
