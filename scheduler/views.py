@@ -22,7 +22,7 @@ def get_stats(request):
         host = Node.objects.get(host=True)
     except:
         if ':' in request.META['HTTP_HOST']:
-            ip, port = request.META['HTTP_HOST'].split()
+            ip, port = request.META['HTTP_HOST'].split(':')
         else:
             ip, port = request.META['HTTP_HOST'], 80
         node_serializer = NodeSerializer(data={'ip': ip, 'port': port, 'host': True})
