@@ -40,6 +40,41 @@ class StatusSerializer(serializers.Serializer):
         status = Status.objects.create(node=node, **validated_data)
         return status
 
-    # def update(self, instance, validated_data):
-    #     instance.memory_total =
+        # def update(self, instance, validated_data):
+        #     instance.memory_total =
+
+
+class ScheduleSerializer(serializers.Serializer):
+    executable = serializers.IntegerField()
+    input_file = serializers.IntegerField()
+
+    time_limit = serializers.DurationField()
+    memory_limit = serializers.IntegerField()
+
+    def create(self, validated_data):
+        from .models import Schedule
+        from .models import UserFiles
+        executable_file = UserFiles.objects.get(id=validated_data['executable'])
+        input_file = UserFiles.objects.get(id=validated_data['input_file'])
+        time_limit = validated_data['time_limit']
+        memory_limit = validated_data['time_limit']
+        temp = Schedule.objects.create(executable=executable_file, input_file=input_file, time_limit=time_limit,
+                                       memory_limit=memory_limit)
+        temp.save()
+        return temp
+
+
+class ExecutionSerializer(serializers.Serializer):
+
+    executable_file = serializers.FileField()
+    input_file = serializers.FileField()
+
+
+    time_limit = serializers.DurationField()
+    memory_limit = serializers.IntegerField()
+
+    def create(selfself,validated_data):
+        from .models import Execution
+        files_data = validated_data.pop('files')
+
 

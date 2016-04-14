@@ -69,3 +69,36 @@ def confirm_follower(request):
             return Response({'msg': 'DENIED'}, status=status.HTTP_406_NOT_ACCEPTABLE)
     else:
         return Response(follower_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def select_node():
+    pass
+
+@api_view(['POST'])
+def scheduler(request):
+    from serializers import ScheduleSerializer
+    import requests
+    request_serializer = ScheduleSerializer(data=request.data)
+    if request_serializer.is_valid():
+        schedule = request_serializer.save()
+        node = select_node()
+        schedule.node = node
+        schedule.save()
+
+        files = [('file', schedule.executable.file), ('file', schedule.input_file.file)]
+        url = "http://%s:%d/execute/" % (node.ip, node.port)
+        payload = {'time_limit': schedule.time_limit, 'memory_limit' : schedule.memory_limit}
+        r = requests.post(url, files=files, data=payload)
+        if r.status_code == 202:
+            print "job delivered"
+            return Response(data={"id": schedule.id}, status=status.HTTP_200_OK)
+        else:
+            print "error" + r.status_code
+            return Response({'msg': 'UNABLE to deliver the job to slave'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+    else:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+#
+# @api_view(['POST'])
+# def execute(request):
+
+    
