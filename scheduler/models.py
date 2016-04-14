@@ -1,6 +1,9 @@
 from __future__ import unicode_literals
+from datetime import timedelta
 
 from django.db import models
+
+from ui.models import UserFiles
 
 
 class Node(models.Model):
@@ -32,3 +35,26 @@ class Status(models.Model):
     cpu_idle_percent = models.FloatField(default=0.0)
     last_updated = models.DateTimeField(auto_now=True)
     node = models.ForeignKey(to=Node, null=True, blank=True)
+
+
+class Schedule(models.Model):
+    node = models.ForeignKey(to=Node)
+    executable = models.ForeignKey(to=UserFiles, related_name='executables')
+    input_file = models.ForeignKey(to=UserFiles, blank=True, null=True, related_name='input_files')
+    output_file = models.ForeignKey(to=UserFiles, blank=True, null=True, related_name='output_files')
+    time_limit = models.DurationField(default=timedelta(30))
+    memory_limit = models.BigIntegerField(default=134217728)
+
+
+def exec_directory_path(instance, filename):
+    return 'exec/.{1}'.format(filename)
+
+
+class Execution(models.Model):
+    executable_file = models.FileField(upload_to=exec_directory_path)
+    input_file = models.FileField(upload_to=exec_directory_path)
+    output_file = models.FileField(upload_to=exec_directory_path)
+    time_limit = models.DurationField(default=timedelta(30))
+    memory_limit = models.BigIntegerField(default=134217728)
+    time_taken = models.DurationField(blank=True, null=True)
+    memory_used = models.BigIntegerField(blank=True, null=True)
