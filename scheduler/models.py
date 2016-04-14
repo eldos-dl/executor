@@ -38,12 +38,14 @@ class Status(models.Model):
 
 
 class Schedule(models.Model):
+    SCHEDULE_STATUS = (('R', 'Running'), ('D', 'Done'))
     node = models.ForeignKey(to=Node)
     executable = models.ForeignKey(to=UserFiles, related_name='executables')
     input_file = models.ForeignKey(to=UserFiles, blank=True, null=True, related_name='input_files')
     output_file = models.ForeignKey(to=UserFiles, blank=True, null=True, related_name='output_files')
     time_limit = models.DurationField(default=timedelta(30))
     memory_limit = models.BigIntegerField(default=134217728)
+    status = models.CharField(max_length=1, choices=SCHEDULE_STATUS, default='R')
 
 
 def exec_directory_path(instance, filename):
@@ -51,6 +53,7 @@ def exec_directory_path(instance, filename):
 
 
 class Execution(models.Model):
+    EXECUTION_STATUS = (('F', 'Failed'), ('R', 'Running'), ('S', 'Success'))
     executable_file = models.FileField(upload_to=exec_directory_path)
     input_file = models.FileField(upload_to=exec_directory_path)
     output_file = models.FileField(upload_to=exec_directory_path)
@@ -58,3 +61,4 @@ class Execution(models.Model):
     memory_limit = models.BigIntegerField(default=134217728)
     time_taken = models.DurationField(blank=True, null=True)
     memory_used = models.BigIntegerField(blank=True, null=True)
+    status = models.CharField(max_length=1, choices=EXECUTION_STATUS, default='R')
