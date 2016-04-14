@@ -74,6 +74,7 @@ def confirm_follower(request):
 def select_node():
     pass
 
+
 @api_view(['POST'])
 def scheduler(request):
     from serializers import ScheduleSerializer
@@ -87,7 +88,7 @@ def scheduler(request):
 
         files = [('file', schedule.executable.file), ('file', schedule.input_file.file)]
         url = "http://%s:%d/execute/" % (node.ip, node.port)
-        payload = {'time_limit': schedule.time_limit, 'memory_limit' : schedule.memory_limit}
+        payload = {'time_limit': schedule.time_limit, 'memory_limit': schedule.memory_limit}
         r = requests.post(url, files=files, data=payload)
         if r.status_code == 202:
             print "job delivered"
@@ -97,8 +98,36 @@ def scheduler(request):
             return Response({'msg': 'UNABLE to deliver the job to slave'}, status=status.HTTP_406_NOT_ACCEPTABLE)
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
-#
-# @api_view(['POST'])
-# def execute(request):
 
-    
+
+@api_view(['POST'])
+def execute(request):
+    from serializers import ExecutionSerializer
+    files = request.FILES.values()
+    payload = request.data
+    execute_serializer = ExecutionSerializer(data=request.data)
+    if execute_serializer.is_valid():
+        execute.save()
+        # run the code.
+        return Response(status=status.HTTP_202_ACCEPTED)
+    else:
+        return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+def run_code(files):
+    from subprocess import Popen, PIPE
+    import os, stat
+    executable = files[0]
+    input_file = files[1]
+    # check the permissions and add permissions the file.
+    #directory should also be mentioned.
+    st = os.stat(executable.file.name)
+    os.chmod(executable.file.name, st.st_mode | stat.S_IEXEC)
+
+    # based on exec file set the command
+    command = "java -jar < " + input_file.file.name
+    process = Popen(command, stdout=PIPE)
+    (output, err) = process.communicate()
+    exit_code = process.wait()
+    # send output to Master.
+    #request.post(url,data=)
