@@ -11,7 +11,6 @@ urlpatterns = [
     url(r'^dashboard/', views.dashboard, name='dashboard'),
     url(r'^myfiles/', views.get_my_files, name='my_files'),
     url(r'^request/', views.debug_request, name='debug'),
-    url(r'^execute/', views.execute,name='execute'),
-    url(r'^schedule/', views.schedule, name='schedule')
+
 
 ]
