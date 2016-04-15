@@ -16,8 +16,6 @@ class UserFileSerializer(serializers.Serializer):
         files_data = validated_data.pop('files')
         user = User.objects.get(id=self.context.get('user_id'))
         for file_data in files_data:
-            print file_data['file']
-            print file_data['file'].name
             last = UserFiles.objects.create(user=user, file=file_data['file'], type=file_data['type'],
                                             name=file_data['file'].name)
         return last
@@ -47,7 +45,6 @@ class ScheduleSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         from .models import Schedule, User
         try:
-            print self.context.get('user_id')
             user = User.objects.get(id=self.context.get('user_id'))
             if validated_data['executable'].user == user and validated_data['input_file'].user == user:
                 schedule = Schedule.objects.create(user=user, **validated_data)

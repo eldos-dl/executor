@@ -81,8 +81,10 @@ def execute(request):
     # payload['memory_limit'] = request.data['memory_limit']
     payload['executable_file'] = files[0]
     if len(files) > 1:
-        payload['input_file'] = files[1]
+        payload['input_file'] = files[0]
+        payload['executable_file'] = files[1]
     print payload
+    print files
     execute_serializer = ExecutionSerializer(data=payload)
     print execute_serializer.is_valid()
     if execute_serializer.is_valid():
@@ -95,10 +97,13 @@ def execute(request):
 @api_view(['POST'])
 def update_output(request):
     from .serializers import ExecutionResponseSerializer
+    from ui.models import UserFiles
     files = list(request.FILES.values())
     request_serializer = ExecutionResponseSerializer(data=request.data)
+    print request_serializer.is_valid()
+    print request_serializer.validated_data
     if request_serializer.is_valid():
         schedule = request_serializer.save()
-        schedule.update(output_file=files[0])
+        UserFiles.objects.create(file=files[0], user=schedule.user, name=files[0].name, type='O')
         return Response(status=status.HTTP_202_ACCEPTED)
     return Response(status=status.HTTP_406_NOT_ACCEPTABLE)

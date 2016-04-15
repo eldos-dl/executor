@@ -123,11 +123,12 @@ def scheduler(request):
         files = [(schedule.executable.name.split('/')[-1], schedule.executable.file.file),
                  (schedule.input_file.name.split('/')[-1], schedule.input_file.file.file)]
         url = "http://%s:%d/execute/" % (node.ip, node.port)
+        print files
         execution_request_serializer = ExecutionRequestSerializer(
             ExecutionRequestType(schedule_id=schedule.id, time_limit=schedule.time_limit, memory_limit=schedule.memory_limit))
         r = requests.post(url, files=files, data=execution_request_serializer.data)
         if r.status_code == 202:
-            print "job delivered"
+            # print "job delivered"
             schedule.status = 'S'
             schedule.save()
             return Response(data=ScheduleResponseSerializer(schedule).data, status=status.HTTP_201_CREATED)
