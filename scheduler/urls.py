@@ -7,6 +7,5 @@ urlpatterns = [
     url(r'^follow/me/$', views.follow_me, name='follow_me'),
     url(r'^follower/confirm/$', views.follow_me, name='follower_confirm'),
     url(r'^execute/', views.execute, name='executed'),
-    url(r'^schedule/', views.scheduler, name='schedule')
 
 ]

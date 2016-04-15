@@ -63,7 +63,7 @@ def user_logout(request):
 @api_view(['POST'])
 @authentication_classes((SessionAuthentication, BasicAuthentication))
 @permission_classes((IsAuthenticated,))
-def upload_files(request, format=None):
+def upload_files(request):
     from .serializers import UserFileSerializer
     data = request.data
     print request.user, request.user.id
@@ -97,13 +97,59 @@ def get_my_files(request):
 def debug_request(request):
     print request.data
     try:
-        print request.FILES.values()
+        print list(request.FILES.values())
     except:
         pass
     return Response(status=status.HTTP_200_OK)
 
+
+@api_view(['POST'])
+@authentication_classes((SessionAuthentication, BasicAuthentication))
+@permission_classes((IsAuthenticated,))
+def scheduler(request):
+    from scheduler.models import Node
+    from .serializers import ScheduleSerializer, ScheduleResponseSerializer, ExecutionRequestSerializer
+    from .types import ExecutionRequestType
+    import requests
+    print request.data
+    request_serializer = ScheduleSerializer(data=request.data, context={'user_id': request.user.id})
+    if request_serializer.is_valid():
+        try:
+            schedule = request_serializer.save()
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        node = Node.objects.get(host=True)
+        schedule.node = node
+        files = [(schedule.executable.name.split('/')[-1], schedule.executable.file.file),
+                 (schedule.input_file.name.split('/')[-1], schedule.input_file.file.file)]
+        url = "http://%s:%d/execute/" % (node.ip, node.port)
+        execution_request_serializer = ExecutionRequestSerializer(
+            ExecutionRequestType(schedule_id=schedule.id, time_limit=schedule.time_limit, memory_limit=schedule.memory_limit))
+        r = requests.post(url, files=files, data=execution_request_serializer.data)
+        if r.status_code == 202:
+            print "job delivered"
+            schedule.status = 'S'
+            schedule.save()
+            return Response(data=ScheduleResponseSerializer(schedule).data, status=status.HTTP_201_CREATED)
+        else:
+            scheduler.status = 'F'
+            schedule.save()
+            print "error" + str(r.status_code)
+            return Response({'msg': 'UNABLE to deliver the job to slave'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+    else:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, BasicAuthentication))
 @permission_classes((IsAuthenticated,))
-def get_user_files(request):
-    pass
+def get_my_schedules(request):
+    from .serializers import ScheduleResponseSerializer
+    from .models import Schedule
+    try:
+        schedules = Schedule.objects.filter(user=request.user)
+        response_serializer = ScheduleResponseSerializer(schedules, many=True)
+        print response_serializer.data
+        return Response(data=response_serializer.data, status=status.HTTP_200_OK)
+    except:
+        return Response(status=status.HTTP_404_NOT_FOUND)

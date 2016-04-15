@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from rest_framework import serializers
 
 
@@ -32,7 +34,6 @@ class StatusSerializer(serializers.Serializer):
     node = NodeSerializer(many=False)
 
     def create(self, validated_data):
-        from .types import StatusType
         from .models import Status, Node
         node_data = validated_data.pop('node')
         node_data.pop('host')
@@ -40,45 +41,32 @@ class StatusSerializer(serializers.Serializer):
         status = Status.objects.create(node=node, **validated_data)
         return status
 
-        # def update(self, instance, validated_data):
-        #     instance.memory_total =
-
-
-class ScheduleSerializer(serializers.Serializer):
-    executable = serializers.IntegerField()
-    input_file = serializers.IntegerField()
-
-    time_limit = serializers.DurationField()
-    memory_limit = serializers.IntegerField()
-
-    def create(self, validated_data):
-        from .models import Schedule
-        from .models import UserFiles
-        executable_file = UserFiles.objects.get(id=validated_data['executable'])
-        input_file = UserFiles.objects.get(id=validated_data['input_file'])
-        time_limit = validated_data['time_limit']
-        memory_limit = validated_data['memory_limit']
-        temp = Schedule.objects.create(executable=executable_file, input_file=input_file, time_limit=time_limit,
-                                       memory_limit=memory_limit)
-        temp.save()
-        return temp
-
 
 class ExecutionSerializer(serializers.Serializer):
+    schedule_id = serializers.IntegerField()
     executable_file = serializers.FileField()
     input_file = serializers.FileField()
+    time_limit = serializers.DurationField(required=False, default=timedelta(30))
+    memory_limit = serializers.IntegerField(required=False, default=134217728)
 
-    time_limit = serializers.DurationField()
-    memory_limit = serializers.IntegerField()
-
-    def create(selfself, validated_data):
+    def create(self, validated_data):
         from .models import Execution
-        files_data = validated_data.pop('files')
-        executable = files_data[0]
-        inputfile = files_data[1]
-        time_limit = validated_data['time_limit']
-        memory_limit = validated_data['memory_limit']
-        temp = Execution.objects.create(executable_file=executable, input_file=inputfile, time_limit=time_limit,
-                                        memory_limit=memory_limit)
-        temp.save()
-        return temp
+        execution = Execution.objects.create(**validated_data)
+        return execution
+
+
+class ExecutionResponseSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    status = serializers.CharField(max_length=1)
+    time_taken = serializers.DurationField()
+    memory_used = serializers.IntegerField(required=False)
+
+    def create(self, validated_data):
+        from ui.models import Schedule
+        schedule = Schedule.objects.get(id=validated_data['id'])
+        schedule.status = validated_data['status']
+        schedule.time_taken = validated_data['time_taken']
+        if 'memory_used' in validated_data:
+            schedule.memory_used = validated_data['memory_used']
+        schedule.save()
+        return schedule

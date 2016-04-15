@@ -20,3 +20,12 @@ class StatusType(object):
             self.cpu_total = psutil.cpu_count()
             self.cpu_used_percent = psutil.cpu_percent()
             self.cpu_idle_percent = psutil.cpu_times_percent().idle
+
+
+class ExecutionResponseType(object):
+    def __init__(self, **kwargs):
+        self.id = kwargs['id']
+        self.time_taken = kwargs['time_taken']
+        self.memory_used = None if 'memory_used' not in kwargs else kwargs['memory_used']
+        self.status = kwargs['status']
+

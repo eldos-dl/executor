@@ -9,8 +9,8 @@ urlpatterns = [
     url(r'^accounts/logout/', views.user_logout, name='logout'),
     url(r'^upload/$', views.upload_files, name='upload'),
     url(r'^dashboard/', views.dashboard, name='dashboard'),
-    url(r'^myfiles/', views.get_my_files, name='my_files'),
+    url(r'^my_files/', views.get_my_files, name='my_files'),
+    url(r'^my_schedules/', views.get_my_schedules, name='my_schedules'),
     url(r'^request/', views.debug_request, name='debug'),
-
-
+    url(r'^schedule/', views.scheduler, name='schedule'),
 ]

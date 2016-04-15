@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from datetime import timedelta
 
 class FileSerializer(serializers.Serializer):
     file = serializers.FileField(allow_empty_file=True)
@@ -35,3 +35,37 @@ class FileDetailSerializer(serializers.Serializer):
 
     def get_size(self, instance):
         return instance.file.size
+
+
+class ScheduleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        from .models import Schedule
+        model = Schedule
+        fields = ('executable', 'input_file', 'time_limit', 'memory_limit')
+
+    def create(self, validated_data):
+        from .models import Schedule, User
+        try:
+            print self.context.get('user_id')
+            user = User.objects.get(id=self.context.get('user_id'))
+            if validated_data['executable'].user == user and validated_data['input_file'].user == user:
+                schedule = Schedule.objects.create(user=user, **validated_data)
+                return schedule
+            else:
+                raise
+        except:
+            raise
+
+
+class ScheduleResponseSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    status = serializers.CharField(max_length=1)
+    time_taken = serializers.DurationField(allow_null=True)
+    memory_used = serializers.IntegerField(allow_null=True)
+
+
+class ExecutionRequestSerializer(serializers.Serializer):
+    schedule_id = serializers.IntegerField()
+    time_limit = serializers.DurationField(required=False, default=timedelta(30))
+    memory_limit = serializers.IntegerField(required=False, default=134217728)

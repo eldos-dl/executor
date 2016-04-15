@@ -39,11 +39,11 @@ def follow_me(request):
     from .models import Node
     leader_serializer = NodeSerializer(data=request.data)
     if leader_serializer.is_valid():
-        follower = leader_serializer.save()
+        leader = leader_serializer.save()
         try:
             follower_serializer = NodeSerializer(Node.objects.get(host=True))
             if follower_serializer.is_valid():
-                response = requests.post("http://%s:%d/follower/confirm/" % (follower.ip, follower.port),
+                response = requests.post("http://%s:%d/follower/confirm/" % (leader.ip, leader.port),
                                          follower_serializer.validated_data)
                 if response.status_code == 202:
                     follower_serializer.save(state='HF')
@@ -71,63 +71,34 @@ def confirm_follower(request):
         return Response(follower_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def select_node():
-    pass
-
-
-@api_view(['POST'])
-def scheduler(request):
-    from serializers import ScheduleSerializer
-    import requests
-    request_serializer = ScheduleSerializer(data=request.data)
-    if request_serializer.is_valid():
-        schedule = request_serializer.save()
-        node = select_node()
-        schedule.node = node
-        schedule.save()
-
-        files = [('file', schedule.executable.file), ('file', schedule.input_file.file)]
-        url = "http://%s:%d/execute/" % (node.ip, node.port)
-        payload = {'time_limit': schedule.time_limit, 'memory_limit': schedule.memory_limit}
-        r = requests.post(url, files=files, data=payload)
-        if r.status_code == 202:
-            print "job delivered"
-            return Response(data={"id": schedule.id}, status=status.HTTP_200_OK)
-        else:
-            print "error" + r.status_code
-            return Response({'msg': 'UNABLE to deliver the job to slave'}, status=status.HTTP_406_NOT_ACCEPTABLE)
-    else:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
 @api_view(['POST'])
 def execute(request):
-    from serializers import ExecutionSerializer
-    files = request.FILES.values()
+    from .serializers import ExecutionSerializer
+    files = list(request.FILES.values())
     payload = request.data
-    execute_serializer = ExecutionSerializer(data=request.data)
+    # payload[]
+    # payload['time_limit'] = request.data['time_limit']
+    # payload['memory_limit'] = request.data['memory_limit']
+    payload['executable_file'] = files[0]
+    if len(files) > 1:
+        payload['input_file'] = files[1]
+    print payload
+    execute_serializer = ExecutionSerializer(data=payload)
+    print execute_serializer.is_valid()
     if execute_serializer.is_valid():
-        execute.save()
-        # run the code.
+        execute_serializer.save()
         return Response(status=status.HTTP_202_ACCEPTED)
-    else:
-        return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+    print execute_serializer.errors
+    return Response(data=execute_serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
-def run_code(files):
-    from subprocess import Popen, PIPE
-    import os, stat
-    executable = files[0]
-    input_file = files[1]
-    # check the permissions and add permissions the file.
-    #directory should also be mentioned.
-    st = os.stat(executable.file.name)
-    os.chmod(executable.file.name, st.st_mode | stat.S_IEXEC)
-
-    # based on exec file set the command
-    command = "java -jar < " + input_file.file.name
-    process = Popen(command, stdout=PIPE)
-    (output, err) = process.communicate()
-    exit_code = process.wait()
-    # send output to Master.
-    #request.post(url,data=)
+@api_view(['POST'])
+def update_output(request):
+    from .serializers import ExecutionResponseSerializer
+    files = list(request.FILES.values())
+    request_serializer = ExecutionResponseSerializer(data=request.data)
+    if request_serializer.is_valid():
+        schedule = request_serializer.save()
+        schedule.update(output_file=files[0])
+        return Response(status=status.HTTP_202_ACCEPTED)
+    return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
