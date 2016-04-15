@@ -39,7 +39,7 @@
         </div>
     </div>
     {% verbatim %}
-    <div class="container-fluid dashboard" ng-app="drive">
+    <div class="container-fluid dashboard" ng-app="drive" ng-controller="DashboardController">
         <div class="secondary-navbar shade">
                 <div class="col-md-2"></div>
                 <div class="col-md-10">
@@ -54,22 +54,41 @@
                                 <li><label for="io-files">Input Files<input type="file" id="io-files" ngf-select="uploadFiles($files, $invalidFiles, 'I')" multiple></label></li>
                             </ul>
                         </li>
+                        <li>
+                            <a ng-click="schedule_execution()">Execute</a>
+                        </li>
                     </ul>
                 </div>
             </div>
         <div class="col-md-2"></div>
-        <div class="col-md-10 grey tall" ng-controller="FilesController" style="padding: 3em;">
+        <div class="col-md-10 grey tall" style="padding: 3em;">
+            <h3 class="col-md-push-1 light" ng-show="userFiles">Files</h3>
             <div ng-repeat="file in userFiles" class="file-details text-center">
-                <div class="col-md-1 thumb-nail">
-                    <i class="fa fa-file-text" aria-hidden="true" ng-show="file.type=='I'"></i>
-                    <i class="fa fa-file-code-o" aria-hidden="true" ng-show="file.type=='E'"></i>
+                <div class="col-md-1 thumb-nail text-center" ng-mouseover="hover=1" ng-mouseleave="hover=0" ng-init="hover=0;file.selected=false;">
+                    <i class="fa fa-file-text" aria-hidden="true" ng-show="file.type!='E' && hover==0 && file.selected==false" ></i>
+                    <i class="fa fa-file-code-o" aria-hidden="true" ng-show="file.type=='E' && hover==0 &&  file.selected==false"></i>
+                    <i class="fa fa-square-o" aria-hidden="true" ng-show="hover==1 && file.selected==false" ng-click="switch_selection(file)"></i>
+                    <i class="fa fa-check-square-o" aria-hidden="true" ng-show="file.selected==true" ng-click="switch_selection(file)"></i>
                 </div>
-                <div class="col-md-4 bold text-left">
-                    <span style="padding-left: 50px">{{ file.name }}</span>
+                <div class="col-md-6 bold text-left" style="overflow: hidden; text-overflow: ellipsis;">
+                    <span style="padding-left: 50px; white-space: nowrap;" >{{ file.name }}</span>
                 </div>
                 <div class="col-md-2 light">{{ file.last_updated | date:'MMM d, y' }}</div>
-                <div class="col-md-2 light">{{ file.last_updated | date:'h:mm a' }}</div>
-                <div class="col-md-2 light">{{ file.size | bytes }}</div>
+                <div class="col-md-1 light">{{ file.last_updated | date:'h:mm a' }}</div>
+                <div class="col-md-1 light text-center">{{ file.size | bytes }}</div>
+            </div>
+            <h3 class="col-md-push-1 light" ng-show="schedules">Schedules</h3>
+            <div ng-repeat="schedule in schedules" class="file-details text-center">
+                <div class="col-md-1 thumb-nail text-center" ng-mouseover="hover=1" ng-mouseleave="hover=0" ng-init="hover=0;file.selected=false;">
+                    <i class="fa fa-refresh" aria-hidden="true" ng-show="schedule.status in ['S', 'W', 'F']"></i>
+                    <i class="fa fa-times" aria-hidden="true" ng-show="schedule.status=='C'"></i>
+                    <i class="fa fa-check" aria-hidden="true" ng-show="schedule.status=='E'"></i>
+                </div>
+                <div class="col-md-6 bold text-left" style="overflow: hidden; text-overflow: ellipsis;">
+                    <span style="padding-left: 50px; white-space: nowrap;" >{{ schedule.id }}</span>
+                </div>
+                <div class="col-md-1 light">{{ file.time_taken | date:'h:mm a' }}</div>
+                <div class="col-md-1 light text-center">{{ file.memory_used | bytes }}</div>
             </div>
         </div>
     </div>

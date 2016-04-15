@@ -167,4 +167,5 @@ html, body{
     padding: 12px 0px!important;
     width: 50px;
     position: absolute;
+    z-index: 2;
 }
