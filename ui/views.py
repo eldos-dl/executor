@@ -65,14 +65,15 @@ def user_logout(request):
 @authentication_classes((SessionAuthentication, BasicAuthentication))
 @permission_classes((IsAuthenticated,))
 def upload_files(request):
-    from .serializers import UserFileSerializer
+    from .serializers import UserFileSerializer, FileDetailSerializer
     data = request.data
     print request.user, request.user.id
     files = [{'file': user_file, 'type': data['type']} for user_file in list(request.FILES.values())]
     file_serializer = UserFileSerializer(data={"files": files}, context={'user_id': request.user.id})
     if file_serializer.is_valid():
-        file_serializer.save()
-        return Response(data={"created": len(files)}, status=status.HTTP_201_CREATED)
+        files = file_serializer.save()
+        response_serializer = FileDetailSerializer(files)
+        return Response(data=response_serializer.data, status=status.HTTP_201_CREATED)
     else:
         print file_serializer.errors
         return Response(data=file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -117,13 +118,17 @@ def rename_my_file(request):
 @permission_classes((IsAuthenticated,))
 def delete_my_files(request):
     from .serializers import UserFileRequestSerializer
+    from copy import deepcopy
+    data = deepcopy(request.data)
+    print data
     request_serializer = UserFileRequestSerializer(data=request.data, context={'user_id': request.user.id}, many=True)
     if request_serializer.is_valid():
         try:
             for user_file in request_serializer.validated_data:
                 if user_file['file'].user == request.user:
                     user_file['file'].delete()
-            return Response(data=request.data, status=status.HTTP_204_NO_CONTENT)
+            print data
+            return Response(data=data, status=status.HTTP_204_NO_CONTENT)
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
     else:
@@ -221,9 +226,10 @@ def diff_files(request):
 
 
 @api_view(['GET'])
-def getfile(request):
+def download_file(request):
     import os
     payload = request.query_params
+    print payload
     file_id = payload["file_id"]
     from ui.models import UserFiles
     file_real = UserFiles.objects.filter(id=file_id)[0]

@@ -16,5 +16,5 @@ urlpatterns = [
     url(r'^request/$', views.debug_request, name='debug'),
     url(r'^schedule/$', views.scheduler, name='schedule'),
     url(r'^diff/$', views.diff_files, name='diff'),
-    url(r'^file_download/$', views.getfile, name='download'),
+    url(r'^download/$', views.download_file, name='download'),
 ]

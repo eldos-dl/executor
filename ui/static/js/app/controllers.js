@@ -18,6 +18,7 @@
                     }, function (response) {
                         if (response.status > 0)
                             $scope.errorMsg = response.status + ': ' + response.data;
+                            console.log(response.config.data);
                     }, function (evt) {
                         file.progress = Math.min(100, parseInt(100.0 *
                             evt.loaded / evt.total));
@@ -33,12 +34,46 @@
             $scope.selected = 0;
             $scope.relation = {};
             $scope.schedules = [];
+            $scope.update_relation = function() {
+                $scope.relation = {};
+                for (key in $scope.userFiles) {
+                    $scope.relation[$scope.userFiles[key].id] = key;
+                }
+            };
             $scope.update_files = function () {
                 $http.get('/my_files/').success(function (data) {
                     $scope.userFiles = data;
                     console.log($scope.userFiles);
-                    for (key in $scope.userFiles) {
-                        $scope.relation[$scope.userFiles[key].id] = key;
+                    $scope.update_relation();
+                });
+            };
+            $scope.delete_file = function(file) {
+                $http.post('/delete_files/', [{"file":file.id}]).then(function (response) {
+                    var data = response.config.data;
+                    if (file.selected == true) {
+                        $scope.switch_selection(file);
+                    }
+                    console.log(data);
+                    $scope.userFiles.splice($scope.relation[file.id], 1);
+                    $scope.update_relation();
+                });
+            };
+            $scope.delete_files = function() {
+                var data = [];
+                for (i in $scope.selectedFiles) {
+                    data.push({"file": $scope.selectedFiles[i]});
+                }
+                $http.post('/delete_files/', data).then(function (response) {
+                    console.log(response);
+                    var data = response.config.data;
+                    console.log(data);
+                    for (i in data){
+                        console.log($scope.relation);
+                        console.log($scope.userFiles);
+                        console.log(data[i]['file']);
+                        $scope.switch_selection($scope.userFiles[$scope.relation[data[i]['file']]]);
+                        $scope.userFiles.splice($scope.relation[data[i]['file']], 1);
+                        $scope.update_relation();
                     }
                 });
             };
@@ -102,7 +137,8 @@
             $scope.schedule_execution = function() {
                 console.log($scope.selectedFilesToSchedule);
                 data = {"executable": $scope.selectedFilesToSchedule['E'], "input_file": $scope.selectedFilesToSchedule['I'] }
-                $http.post('/schedule/', data).success(function (data) {
+                $http.post('/schedule/', data).then(function (response) {
+                    var data = response.config.data;
                     $scope.schedules.push(data);
                     console.log($scope.schedules);
                 });

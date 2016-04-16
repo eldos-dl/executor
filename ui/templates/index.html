@@ -55,7 +55,7 @@
                             </ul>
                         </li>
                         <li><a ng-click="schedule_execution()">Execute</a></li>
-                        <li><a ng-click="">Delete</a></li>
+                        <li><a ng-click="delete_files()">Delete</a></li>
                         <li><a ng-click="">Diff</a></li>
                     </ul>
                 </div>
@@ -89,14 +89,10 @@
                 <div class="col-md-1 light">{{ file.last_updated | date:'h:mm a' }}</div>
                 <div class="col-md-1 light">{{ file.size | bytes }}</div>
                 <div class="light text-right dots">
-                    <a href="#" data-toggle="dropdown">
-                                <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><label for="exec-files">Delete</li>
-                        <li><label for="exec-files">Rename</li>
-                    </ul>
-                    </div>
+                        <i class="fa" ng-class="trash==0 ? 'fa-trash-o' : 'fa-trash'" aria-hidden="true" ng-mouseover="trash=1" ng-mouseleave="trash=0" ng-init="trash=0" ng-click="delete_file(file)"></i>
+                        <a download="{{ file.name }}" ng-href="/download/?file_id={{ file.id }}"><i class="fa fa-download" aria-hidden="true"></i></a>
+
+                </div>
 
             </div>
             <h3 class="col-md-push-1 light" ng-show="schedules">Schedules</h3>
