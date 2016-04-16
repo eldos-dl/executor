@@ -94,6 +94,43 @@ def get_my_files(request):
 
 
 @api_view(['POST'])
+@authentication_classes((SessionAuthentication, BasicAuthentication))
+@permission_classes((IsAuthenticated,))
+def rename_my_file(request):
+    from .serializers import FileDetailSerializer
+    request_serializer = FileDetailSerializer(data=request.data, context={'user_id': request.user.id})
+    if request_serializer.is_valid():
+        try:
+            request_serializer.save()  # Creates instance
+            changed_file = request_serializer.save()  # Updates instance
+            response_serializer = FileDetailSerializer(changed_file)
+            return Response(data=response_serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response(data=request_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@authentication_classes((SessionAuthentication, BasicAuthentication))
+@permission_classes((IsAuthenticated,))
+def delete_my_files(request):
+    from .serializers import UserFileRequestSerializer
+    request_serializer = UserFileRequestSerializer(data=request.data, context={'user_id': request.user.id}, many=True)
+    if request_serializer.is_valid():
+        try:
+            for user_file in request_serializer.validated_data:
+                if user_file['file'].user == request.user:
+                    user_file['file'].delete()
+            return Response(data=request.data, status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response(data=request_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['POST'])
 def debug_request(request):
     print request.data
     try:
@@ -159,3 +196,27 @@ def get_my_schedules(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 
+@api_view(['POST'])
+@authentication_classes((SessionAuthentication, BasicAuthentication))
+@permission_classes((IsAuthenticated,))
+def diff_files(request):
+    from diff_match_patch import diff_match_patch
+    from .serializers import DiffRequestSerializer, DiffSerializer
+    request_serializer = DiffRequestSerializer(data=request.data, context={'user_id': request.user.id})
+    if request_serializer.is_valid():
+        try:
+            old_file, new_file = request_serializer.get_files()
+            differ = diff_match_patch()
+            diff = differ.diff_lineMode(old_file, new_file, 0)
+            lines_diff = []
+            for delta in diff:
+                lines_diff.append({"delta": delta[0], "lines": delta[1].splitlines(1)})
+            response_serializer = DiffSerializer(data=lines_diff, many=True)
+            if response_serializer.is_valid():
+                return Response(data=response_serializer.validated_data, status=status.HTTP_200_OK)
+            else:
+                return Response(data=response_serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response(data=request_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
