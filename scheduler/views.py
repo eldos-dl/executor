@@ -125,6 +125,7 @@ def lead_nodes(request):
             try:
                 node.state = 'RF'
                 node.save()
+                requests.post(node.get_http_endpoint() + "stats/", data=host_setializer.data)
                 requests.post(node.get_http_endpoint() + "follow/me/", data=host_setializer.data)
             except:
                 pass
