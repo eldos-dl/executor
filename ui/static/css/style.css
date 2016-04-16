@@ -179,3 +179,11 @@ html, body{
 .header-details > div {
     padding: 15px 0px;
 }
+
+.dots {
+    font-size: 18px;
+    padding: 12px 0px!important;
+    width: 50px;
+    position: absolute;
+    right: 5%
+}

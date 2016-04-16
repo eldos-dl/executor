@@ -1,3 +1,4 @@
+from rexec import FileWrapper
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
@@ -217,3 +218,17 @@ def diff_files(request):
             return Response(status=status.HTTP_404_NOT_FOUND)
     else:
         return Response(data=request_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def getfile(request):
+    import os
+    payload = request.query_params
+    file_id = payload["file_id"]
+    from ui.models import UserFiles
+    file_real = UserFiles.objects.filter(id=file_id)[0]
+    wrapper = FileWrapper(file_real.file.file)
+    response = HttpResponse(wrapper, content_type='application/force-download')
+    response['Content-Disposition'] = 'attachment; filename=%s' % os.path.basename(file_real.name)
+    response['Content-Length'] = file_real.file.size
+    return response
