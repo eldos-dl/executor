@@ -1,5 +1,7 @@
-from rest_framework import serializers
 from datetime import timedelta
+
+from rest_framework import serializers
+
 
 class FileSerializer(serializers.Serializer):
     file = serializers.FileField(allow_empty_file=True)
@@ -48,8 +50,8 @@ class FileDetailSerializer(serializers.Serializer):
         instance.save()
         return instance
 
-class ScheduleSerializer(serializers.ModelSerializer):
 
+class ScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         from .models import Schedule
         model = Schedule
@@ -102,6 +104,8 @@ class UserFileRequestSerializer(serializers.Serializer):
     from .models import UserFiles
     file = serializers.PrimaryKeyRelatedField(queryset=UserFiles.objects.all())
 
+
 class DiffSerializer(serializers.Serializer):
     delta = serializers.IntegerField()
-    lines = serializers.ListField(child=serializers.CharField(allow_blank=True, trim_whitespace=False), required=False, allow_empty=True)
+    lines = serializers.ListField(child=serializers.CharField(allow_blank=True, trim_whitespace=False), required=False,
+                                  allow_empty=True)

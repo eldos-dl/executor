@@ -107,3 +107,25 @@ def update_output(request):
         UserFiles.objects.create(file=files[0], user=schedule.user, name=files[0].name, type='O')
         return Response(status=status.HTTP_202_ACCEPTED)
     return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+@api_view(['POST'])
+def lead_nodes(request):
+    from .serializers import NodeSerializer
+    from .models import Node
+    import requests
+    request_serializer = NodeSerializer(data=request.data, many=True)
+    if request_serializer.is_valid():
+        nodes = request_serializer.save()
+        host_node = Node.objects.get(host=True)
+        host_node.state = 'C'
+        host_node.save()
+        host_setializer = NodeSerializer(host_node)
+        for node in nodes:
+            try:
+                node.state = 'RF'
+                node.save()
+                requests.post(node.get_http_endpoint() + "follow/me/", data=host_setializer.data)
+            except:
+                pass
+        return Response(status=status.HTTP_200_OK)
