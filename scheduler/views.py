@@ -40,14 +40,15 @@ def follow_me(request):
     leader_serializer = NodeSerializer(data=request.data)
     if leader_serializer.is_valid():
         leader = leader_serializer.save()
+        print leader.get_http_endpoint()
         try:
             follower_serializer = NodeSerializer(Node.objects.get(host=True))
-            if follower_serializer.is_valid():
-                response = requests.post(leader.get_http_endpoint() + "follower/confirm/",
-                                         follower_serializer.validated_data)
-                if response.status_code == 202:
-                    follower_serializer.save(state='HF')
-                    leader_serializer.save(state='HL')
+            print "Requesting %s/follower/confirm/" % leader.get_http_endpoint()
+            response = requests.post(leader.get_http_endpoint() + "follower/confirm/",
+                                     follower_serializer.data)
+            if response.status_code == 202:
+                follower_serializer.save(state='HF')
+                leader_serializer.save(state='HL')
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(leader_serializer.data, status=status.HTTP_200_OK)
@@ -121,14 +122,18 @@ def lead_nodes(request):
         host_node.state = 'C'
         host_node.save()
         host_setializer = NodeSerializer(host_node)
+        print nodes
         for node in nodes:
-            try:
-                node.state = 'RF'
-                node.save()
-                requests.post(node.get_http_endpoint() + "stats/", data=host_setializer.data)
-                response = requests.post(node.get_http_endpoint() + "follow/me/", data=host_setializer.data)
-                if response.status_code != 200:
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-            except:
-                pass
+            # try:
+            node.state = 'RF'
+            node.save()
+            print node
+            print "Requesting %s/stats/" % node.get_http_endpoint()
+            requests.post(node.get_http_endpoint() + "stats/", data=host_setializer.data)
+            print "Requesting %s/follow/me/" % node.get_http_endpoint()
+            response = requests.post(node.get_http_endpoint() + "follow/me/", data=host_setializer.data)
+            if response.status_code != 200:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            # except:
+            #     pass
         return Response(status=status.HTTP_200_OK)
