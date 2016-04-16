@@ -169,3 +169,13 @@ html, body{
     position: absolute;
     z-index: 2;
 }
+.header-details {
+    height: 50px;
+    color: rgb(85, 85, 85);
+    font-weight: bolder;
+
+}
+
+.header-details > div {
+    padding: 15px 0px;
+}

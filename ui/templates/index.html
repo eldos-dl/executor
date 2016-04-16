@@ -54,16 +54,28 @@
                                 <li><label for="io-files">Input Files<input type="file" id="io-files" ngf-select="uploadFiles($files, $invalidFiles, 'I')" multiple></label></li>
                             </ul>
                         </li>
-                        <li>
-                            <a ng-click="schedule_execution()">Execute</a>
-                        </li>
+                        <li><a ng-click="schedule_execution()">Execute</a></li>
+                        <li><a ng-click="">Delete</a></li>
+                        <li><a ng-click="">Diff</a></li>
                     </ul>
                 </div>
             </div>
         <div class="col-md-2"></div>
-        <div class="col-md-10 grey tall" style="padding: 3em;">
-            <h3 class="col-md-push-1 light" ng-show="userFiles">Files</h3>
-            <div ng-repeat="file in userFiles" class="file-details text-center">
+        <div class="col-md-10 grey tall" style="padding: 3em; padding-top: 1em;">
+            <h3 class="col-md-push-1 light" ng-show="userFiles.length!=0">Files</h3>
+            <div class="header-details text-left">
+                <div class="col-md-1 thumb-nail text-center">
+                    <i class="fa fa-square-o" aria-hidden="true" ng-show="selected==0" ng-click="switch_all_files()"></i>
+                    <i class="fa fa-minus-square" ng-hide="selected==0 || selected==userFiles.length" ng-click="switch_all_files()" aria-hidden="true"></i>
+                    <i class="fa fa-check-square-o" aria-hidden="true" ng-show="selected==userFiles.length" ng-click="switch_all_files()"></i>
+                </div>
+                <div class="col-md-6 bold text-left" style="overflow: hidden; text-overflow: ellipsis;">
+                    <span style="padding-left: 50px; white-space: nowrap;" >File Name</span>
+                </div>
+                <div class="col-md-3 text-center">Last Updated</div>
+                <div class="col-md-1">Size</div>
+            </div>
+            <div ng-repeat="file in userFiles" class="file-details text-left">
                 <div class="col-md-1 thumb-nail text-center" ng-mouseover="hover=1" ng-mouseleave="hover=0" ng-init="hover=0;file.selected=false;">
                     <i class="fa fa-file-text" aria-hidden="true" ng-show="file.type!='E' && hover==0 && file.selected==false" ></i>
                     <i class="fa fa-file-code-o" aria-hidden="true" ng-show="file.type=='E' && hover==0 &&  file.selected==false"></i>
@@ -73,9 +85,9 @@
                 <div class="col-md-6 bold text-left" style="overflow: hidden; text-overflow: ellipsis;">
                     <span style="padding-left: 50px; white-space: nowrap;" >{{ file.name }}</span>
                 </div>
-                <div class="col-md-2 light">{{ file.last_updated | date:'MMM d, y' }}</div>
+                <div class="col-md-2 light text-center">{{ file.last_updated | date:'MMM d, y' }}</div>
                 <div class="col-md-1 light">{{ file.last_updated | date:'h:mm a' }}</div>
-                <div class="col-md-1 light text-center">{{ file.size | bytes }}</div>
+                <div class="col-md-1 light">{{ file.size | bytes }}</div>
             </div>
             <h3 class="col-md-push-1 light" ng-show="schedules">Schedules</h3>
             <div ng-repeat="schedule in schedules" class="file-details text-center">

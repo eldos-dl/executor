@@ -28,7 +28,9 @@
         }])
         .controller('DashboardController', ['$scope', '$rootScope', '$http', function ($scope, $rootScope,  $http) {
             $scope.userFiles = [];
-            $scope.selected = {'E': -1, 'I': -1};
+            $scope.selectedFilesToSchedule = {'E': -1, 'I': -1};
+            $scope.selectedFiles = [];
+            $scope.selected = 0;
             $scope.relation = {};
             $scope.schedules = [];
             $scope.update_files = function () {
@@ -36,31 +38,59 @@
                     $scope.userFiles = data;
                     console.log($scope.userFiles);
                     for (key in $scope.userFiles) {
-                        $scope.relation[$scope.userFiles[key].id] = key
+                        $scope.relation[$scope.userFiles[key].id] = key;
                     }
                 });
             };
             $scope.switch_selection = function (file) {
                 if (file.type == 'E' && file.selected==false) {
-                    if ($scope.selected['E'] != -1) {
-                        $scope.userFiles[$scope.relation[$scope.selected['E']]].selected = false;
-                    }
-                    $scope.selected['E'] = file.id;
+                    //if ($scope.selectedFilesToSchedule['E'] != -1) {
+                    //    $scope.userFiles[$scope.relation[$scope.selectedFilesToSchedule['E']]].selected = false;
+                    //}
+                    $scope.selectedFilesToSchedule['E'] = file.id;
+                    $scope.selectedFiles.push(file.id);
+                    $scope.selected += 1;
                     file.selected = true;
 
                 } else if(file.selected==false) {
-                    if ($scope.selected['I'] != -1) {
-                        $scope.userFiles[$scope.relation[$scope.selected['I']]].selected = false;
-                    }
-                    $scope.selected['I'] = file.id;
+                    //if ($scope.selectedFilesToSchedule['I'] != -1) {
+                    //    $scope.userFiles[$scope.relation[$scope.selectedFilesToSchedule['I']]].selected = false;
+                    //}
+                    $scope.selectedFilesToSchedule['I'] = file.id;
+                    $scope.selectedFiles.push(file.id);
+                    $scope.selected += 1;
                     file.selected = true;
+
                 } else if(file.type == 'E' && file.selected==true) {
-                    $scope.selected['E'] = -1;
+                    $scope.selectedFilesToSchedule['E'] = -1;
+                    $scope.selectedFiles.splice($scope.selectedFiles.indexOf(file.id), 1);
+                    $scope.selected -= 1;
                     file.selected = false;
+
                 } else if(file.selected==true) {
-                    $scope.selected['I'] = -1;
+                    $scope.selectedFilesToSchedule['I'] = -1;
+                    $scope.selectedFiles.splice($scope.selectedFiles.indexOf(file.id), 1);
+                    $scope.selected -= 1;
                     file.selected = false;
                 }
+                console.log($scope.selectedFilesToSchedule);
+            };
+            $scope.switch_all_files = function() {
+                if ($scope.selected == 0) {
+                    for (key in $scope.userFiles) {
+                        $scope.userFiles[key].selected = true;
+                        $scope.selectedFiles.push($scope.userFiles[key].id);
+                    }
+                    $scope.selected = $scope.userFiles.length;
+                } else {
+                    for (key in $scope.userFiles) {
+                        $scope.userFiles[key].selected = false;
+                    }
+                    $scope.selected = 0;
+                }
+                $scope.selectedFiles.splice(0, $scope.selectedFiles.length);
+                $scope.selectedFilesToSchedule = {'E': -1, 'I': -1};
+                console.log($scope.userFiles.length);
                 console.log($scope.selected);
             };
             $scope.update_schedules = function() {
@@ -68,10 +98,10 @@
                     $scope.schedules = data;
                     console.log($scope.schedules);
                 });
-            }
+            };
             $scope.schedule_execution = function() {
-                console.log($scope.selected);
-                data = {"executable": $scope.selected['E'], "input_file": $scope.selected['I'] }
+                console.log($scope.selectedFilesToSchedule);
+                data = {"executable": $scope.selectedFilesToSchedule['E'], "input_file": $scope.selectedFilesToSchedule['I'] }
                 $http.post('/schedule/', data).success(function (data) {
                     $scope.schedules.push(data);
                     console.log($scope.schedules);
