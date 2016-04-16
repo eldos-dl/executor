@@ -43,14 +43,14 @@ def follow_me(request):
         try:
             follower_serializer = NodeSerializer(Node.objects.get(host=True))
             if follower_serializer.is_valid():
-                response = requests.post("http://%s:%d/follower/confirm/" % (leader.ip, leader.port),
+                response = requests.post(leader.get_http_endpoint() + "follower/confirm/",
                                          follower_serializer.validated_data)
                 if response.status_code == 202:
                     follower_serializer.save(state='HF')
                     leader_serializer.save(state='HL')
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        return Response(leader_serializer.data)
+        return Response(leader_serializer.data, status=status.HTTP_200_OK)
     else:
         return Response(leader_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -126,7 +126,9 @@ def lead_nodes(request):
                 node.state = 'RF'
                 node.save()
                 requests.post(node.get_http_endpoint() + "stats/", data=host_setializer.data)
-                requests.post(node.get_http_endpoint() + "follow/me/", data=host_setializer.data)
+                response = requests.post(node.get_http_endpoint() + "follow/me/", data=host_setializer.data)
+                if response.status_code != 200:
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
             except:
                 pass
         return Response(status=status.HTTP_200_OK)
