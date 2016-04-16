@@ -15,13 +15,7 @@ from .types import ExecutionResponseType
 from .serializers import ExecutionResponseSerializer
 import signal
 
-
-class Alarm(Exception):
-    pass
-
-
-def alarm_handler(signum, frame):
-    raise Alarm
+from .utils import Alarm, alarm_handler
 
 
 # TODO: Notify leader after file execution.
@@ -67,13 +61,14 @@ def run_files(sender, instance, **kwargs):
                 process.kill()
                 output_name = executable_path.split('/')[-1][1:] + '.out'
                 instance.output_file.save(output_name, ContentFile(""))
-                files={}
+                files = {}
                 payload = ExecutionResponseSerializer(
                     ExecutionResponseType(id=instance.schedule_id, status='T', time_taken=time_taken))
                 response = requests.post(leader.get_http_endpoint() + 'output/', files=files,
-                                 data=payload.data)
+                                         data=payload.data)
 
 
         except:
             instance.status = 'F'
             instance.save()
+            print "Failed Execution"

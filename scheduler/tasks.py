@@ -12,7 +12,6 @@ def heart_beat():
         response_serializer = StatusSerializer(data=response.json())
         if response_serializer.is_valid():
             status = response_serializer.save()
-        print status.las
 
 
 

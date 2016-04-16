@@ -1,36 +1,23 @@
-def getNode():
-    #pass
-    from scheduler.models import Status
+
+
+class Alarm(Exception):
+    pass
+
+
+def alarm_handler(signum, frame):
+    raise Alarm
+
+
+def select_slave_node():
     from scheduler.models import Node
-    nodes = Node.objects.filter(state='HF');
-    from ui.models import Schedule
-    for node in nodes:
-        running_job_list = Schedule.objects.filter(node=node, status='S')
-        node['num_of_jobs'] = len(running_job_list)
-    nodelist = sorted(nodes, key=lambda x: x.num_of_jobs, reverse=False)
-    min = nodelist[0].num_of_jobs
-    count = 0
-    for i in nodelist:
-        if i.num_of_jobs == min:
-            count += 1
-
-    if count > 1:
-        minlist = nodelist[0:count]
-        for node in minlist:
-            statuslist = Status.objects.filter(node=node)
-            node['cpu'] = statuslist[0]['cpu_idle_percent']
-            node['mem'] = statuslist[0]['memory_available']
-        finallist = sorted(minlist, key=lambda x: x.mem, reverse=True)
-
-    else:
-        finallist = nodelist
-
-    return finallist[0]
-
+    nodes = Node.objects.filter(state='HF')
+    running_jobs = [(node.schedule_set.filter(status='S').count(), - node.status_set.all()[0].memory_available,
+                    node.status_set.all()[0].cpu_used_percent) for node in nodes]
+    best = min(running_jobs)
+    return nodes[running_jobs.index(best)]
 
 
 def reschedule(node):
-    from .models import Node
     import requests
     from ui.models import Schedule
     from ui.serializers import ExecutionRequestSerializer
@@ -40,7 +27,7 @@ def reschedule(node):
         executable_file = job['executable_file']
         input_file = job['input_file']
         # reschedule them .
-        node = getNode()
+        node = select_slave_node()
         # node = Node.objects.get(host=True)
         job.node = node
         files = [(job.executable.name.split('/')[-1], job.executable.file.file),

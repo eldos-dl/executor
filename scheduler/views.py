@@ -28,6 +28,8 @@ def get_stats(request):
         node_serializer = NodeSerializer(data={'ip': ip, 'port': port, 'host': True})
         if node_serializer.is_valid():
             host = node_serializer.save()
+        else:
+            return Response(node_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     response_serializer = StatusSerializer(StatusType(node=host))
     return Response(response_serializer.data, status=status.HTTP_200_OK)
 
@@ -114,7 +116,7 @@ def update_output(request):
 
 @api_view(['POST'])
 def lead_nodes(request):
-    from .serializers import NodeSerializer
+    from .serializers import NodeSerializer, StatusSerializer
     from .models import Node
     import requests
     request_serializer = NodeSerializer(data=request.data, many=True)
@@ -131,7 +133,12 @@ def lead_nodes(request):
                 node.save()
                 # print node
                 # print "Requesting %s/stats/" % node.get_http_endpoint()
-                requests.post(node.get_http_endpoint() + "stats/", data=host_setializer.data)
+                response = requests.post(node.get_http_endpoint() + "stats/", data=host_setializer.data)
+                stats_serializer = StatusSerializer(data=response.json())
+                if stats_serializer.is_valid():
+                    stats = stats_serializer.save()
+                else:
+                    return Response(data=stats_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 # print "Requesting %s/follow/me/" % node.get_http_endpoint()
                 response = requests.post(node.get_http_endpoint() + "follow/me/", data=host_setializer.data)
                 if response.status_code != 200:
