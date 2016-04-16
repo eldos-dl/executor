@@ -52,7 +52,8 @@ def follow_me(request):
             if response.status_code == 202:
                 follower.state = 'HF'
                 follower.save()
-                leader_serializer.save(state='HL')
+                leader.state = 'HL'
+                leader.save()
         except:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(leader_serializer.data, status=status.HTTP_200_OK)
