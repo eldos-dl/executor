@@ -20,7 +20,7 @@ class UserFiles(models.Model):
 class Schedule(models.Model):
     from scheduler.models import Node
     SCHEDULE_STATUS = (('S', 'Scheduled'), ('C', 'Completed Successfully'), ('W', 'Waiting to be Scheduled'),
-                       ('F', 'Failed to Schedule'), ('E', 'Completed with Errors'))
+                       ('F', 'Failed to Schedule'), ('E', 'Completed with Errors'),('T',  'Time Limit Exceeded'))
     user = models.ForeignKey(to=User)
     node = models.ForeignKey(to=Node, null=True, blank=True)
     executable = models.ForeignKey(to=UserFiles, related_name='executables')

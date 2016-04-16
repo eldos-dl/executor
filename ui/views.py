@@ -145,6 +145,7 @@ def debug_request(request):
 @permission_classes((IsAuthenticated,))
 def scheduler(request):
     from scheduler.models import Node
+    from scheduler.utils import getNode
     from .serializers import ScheduleSerializer, ScheduleResponseSerializer, ExecutionRequestSerializer
     from .types import ExecutionRequestType
     import requests
@@ -155,7 +156,8 @@ def scheduler(request):
             schedule = request_serializer.save()
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        node = Node.objects.get(host=True)
+        node = getNode()
+        #node = Node.objects.get(host=True)
         schedule.node = node
         files = [(schedule.executable.name.split('/')[-1], schedule.executable.file.file),
                  (schedule.input_file.name.split('/')[-1], schedule.input_file.file.file)]

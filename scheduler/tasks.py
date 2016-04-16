@@ -13,3 +13,6 @@ def heart_beat():
         if response_serializer.is_valid():
             status = response_serializer.save()
         print status.las
+
+
+
