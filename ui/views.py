@@ -129,7 +129,6 @@ def delete_my_files(request):
         return Response(data=request_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 @api_view(['POST'])
 def debug_request(request):
     print request.data
@@ -144,7 +143,6 @@ def debug_request(request):
 @authentication_classes((SessionAuthentication, BasicAuthentication))
 @permission_classes((IsAuthenticated,))
 def scheduler(request):
-    from scheduler.models import Node
     from scheduler.utils import select_slave_node
     from .serializers import ScheduleSerializer, ScheduleResponseSerializer, ExecutionRequestSerializer
     from .types import ExecutionRequestType
@@ -157,7 +155,7 @@ def scheduler(request):
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         node = select_slave_node()
-        #node = Node.objects.get(host=True)
+        # node = Node.objects.get(host=True)
         schedule.node = node
         files = [(schedule.executable.name.split('/')[-1], schedule.executable.file.file),
                  (schedule.input_file.name.split('/')[-1], schedule.input_file.file.file)]
@@ -168,7 +166,6 @@ def scheduler(request):
                                  memory_limit=schedule.memory_limit))
         r = requests.post(url, files=files, data=execution_request_serializer.data)
         if r.status_code == 202:
-            # print "job delivered"
             schedule.status = 'S'
             schedule.save()
             return Response(data=ScheduleResponseSerializer(schedule).data, status=status.HTTP_201_CREATED)

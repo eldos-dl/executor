@@ -11,24 +11,23 @@ def alarm_handler(signum, frame):
 def select_slave_node():
     from scheduler.models import Node
     nodes = Node.objects.filter(state='HF')
-    running_jobs = [(node.schedule_set.filter(status='S').count(), - node.status_set.all()[0].memory_available,
-                    node.status_set.all()[0].cpu_used_percent) for node in nodes]
-    best = min(running_jobs)
-    return nodes[running_jobs.index(best)]
+    if nodes:
+        running_jobs = [(node.schedule_set.filter(status='S').count(), - node.status_set.all()[0].memory_available,
+                        node.status_set.all()[0].cpu_used_percent) for node in nodes]
+        best = min(running_jobs)
+        return nodes[running_jobs.index(best)]
+    else:
+        return Node.objects.get(host=True)
 
 
-def reschedule(node):
+def reschedule_jobs(node):
     import requests
     from ui.models import Schedule
     from ui.serializers import ExecutionRequestSerializer
     from ui.types import ExecutionRequestType
     running_job_list = Schedule.objects.filter(node=node, status='S')
     for job in running_job_list:
-        executable_file = job['executable_file']
-        input_file = job['input_file']
-        # reschedule them .
         node = select_slave_node()
-        # node = Node.objects.get(host=True)
         job.node = node
         files = [(job.executable.name.split('/')[-1], job.executable.file.file),
                  (job.input_file.name.split('/')[-1], job.input_file.file.file)]
