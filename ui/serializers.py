@@ -24,9 +24,9 @@ class UserFileSerializer(serializers.Serializer):
 class FileDetailSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
-    size = serializers.SerializerMethodField()
-    type = serializers.ChoiceField(choices=[('E', 'exec'), ('I', 'io')])
-    last_updated = serializers.DateTimeField()
+    size = serializers.SerializerMethodField(required=False)
+    type = serializers.ChoiceField(choices=[('E', 'exec'), ('I', 'io')], required=False)
+    last_updated = serializers.DateTimeField(required=False)
 
     def get_name(self, instance):
         return instance.file.name
@@ -34,6 +34,19 @@ class FileDetailSerializer(serializers.Serializer):
     def get_size(self, instance):
         return instance.file.size
 
+    def create(self, validated_data):
+        from .models import UserFiles, User
+        try:
+            user = User.objects.get(id=self.context.get('user_id'))
+            user_file = UserFiles.objects.get(id=validated_data['id'], user=user)
+            return user_file
+        except:
+            raise
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.save()
+        return instance
 
 class ScheduleSerializer(serializers.ModelSerializer):
 
@@ -66,3 +79,29 @@ class ExecutionRequestSerializer(serializers.Serializer):
     schedule_id = serializers.IntegerField()
     time_limit = serializers.DurationField(required=False, default=timedelta(30))
     memory_limit = serializers.IntegerField(required=False, default=134217728)
+
+
+class DiffRequestSerializer(serializers.Serializer):
+    from .models import UserFiles
+    old_source = serializers.PrimaryKeyRelatedField(queryset=UserFiles.objects.all())
+    new_source = serializers.PrimaryKeyRelatedField(queryset=UserFiles.objects.all())
+
+    def get_files(self):
+        from .models import User
+        validated_data = self.validated_data
+        user = User.objects.get(id=self.context.get('user_id'))
+        if validated_data['old_source'].user == user and validated_data['new_source'].user == user:
+            old_file = validated_data['old_source'].file.read()
+            new_file = validated_data['new_source'].file.read()
+            return old_file, new_file
+        else:
+            raise
+
+
+class UserFileRequestSerializer(serializers.Serializer):
+    from .models import UserFiles
+    file = serializers.PrimaryKeyRelatedField(queryset=UserFiles.objects.all())
+
+class DiffSerializer(serializers.Serializer):
+    delta = serializers.IntegerField()
+    lines = serializers.ListField(child=serializers.CharField(allow_blank=True, trim_whitespace=False), required=False, allow_empty=True)
