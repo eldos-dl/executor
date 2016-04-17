@@ -235,15 +235,23 @@ def diff_files(request):
 
 
 @api_view(['GET'])
+@authentication_classes((SessionAuthentication, BasicAuthentication))
+@permission_classes((IsAuthenticated,))
 def download_file(request):
     import os
     payload = request.query_params
     print payload
     file_id = payload["file_id"]
     from ui.models import UserFiles
-    file_real = UserFiles.objects.filter(id=file_id)[0]
-    wrapper = FileWrapper(file_real.file.file)
-    response = HttpResponse(wrapper, content_type='application/force-download')
-    response['Content-Disposition'] = 'attachment; filename=%s' % os.path.basename(file_real.name)
-    response['Content-Length'] = file_real.file.size
-    return response
+    try:
+        file_real = UserFiles.objects.get(id=file_id)
+        if file_real.user == request.user:
+            wrapper = FileWrapper(file_real.file.file)
+            response = HttpResponse(wrapper, content_type='application/force-download')
+            response['Content-Disposition'] = 'attachment; filename=%s' % os.path.basename(file_real.name)
+            response['Content-Length'] = file_real.file.size
+            return response
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+    except:
+        return Response(status=status.HTTP_404_NOT_FOUND)

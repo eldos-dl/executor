@@ -41,11 +41,12 @@ def run_files(sender, instance, **kwargs):
             instance.save()
             leader = Node.objects.get(state='HL')
             status = 'E' if err else 'C'
+            print status
             files = {"file": (output_name, instance.output_file.file.file)}
             payload = ExecutionResponseSerializer(
                 ExecutionResponseType(id=instance.schedule_id, status=status, time_taken=time_taken))
             response = requests.post(leader.get_http_endpoint() + 'output/', files=files,
-                          data=payload.data)
+                                     data=payload.data)
             print response
         except:
             instance.status = 'F'

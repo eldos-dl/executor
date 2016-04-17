@@ -71,10 +71,13 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
 
 class ScheduleResponseSerializer(serializers.Serializer):
+    from scheduler.serializers import NodeSerializer
     id = serializers.IntegerField()
     status = serializers.CharField(max_length=1)
     time_taken = serializers.DurationField(allow_null=True)
     memory_used = serializers.IntegerField(allow_null=True)
+    node = NodeSerializer(many=False, allow_null=True)
+    output_file_id = serializers.IntegerField(allow_null=False, required=False)
 
 
 class ExecutionRequestSerializer(serializers.Serializer):
