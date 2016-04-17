@@ -116,6 +116,7 @@ def update_output(request):
     print request_serializer.validated_data
     if request_serializer.is_valid():
         schedule = request_serializer.save()
+        print schedule.status
         UserFiles.objects.create(file=files[0], user=schedule.user, name=files[0].name, type='O')
         return Response(status=status.HTTP_202_ACCEPTED)
     return Response(status=status.HTTP_406_NOT_ACCEPTABLE)

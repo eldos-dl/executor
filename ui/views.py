@@ -172,8 +172,6 @@ def scheduler(request):
                                  memory_limit=schedule.memory_limit))
         r = requests.post(url, files=files, data=execution_request_serializer.data)
         if r.status_code == 202:
-            schedule.status = 'S'
-            schedule.save()
             return Response(data=ScheduleResponseSerializer(schedule).data, status=status.HTTP_201_CREATED)
         else:
             scheduler.status = 'F'
