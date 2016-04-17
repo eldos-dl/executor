@@ -1,5 +1,3 @@
-
-
 class Alarm(Exception):
     pass
 
@@ -9,11 +7,16 @@ def alarm_handler(signum, frame):
 
 
 def select_slave_node():
-    from scheduler.models import Node
+    from scheduler.models import Node, Status
     nodes = Node.objects.filter(state='HF')
     if nodes:
-        running_jobs = [(node.schedule_set.filter(status='S').count(), - node.status_set.all()[0].memory_available,
-                        node.status_set.all()[0].cpu_used_percent) for node in nodes]
+        running_jobs = []
+        for node in nodes:
+            print node
+            stats = Status.objects.get(node=node)
+            print stats
+            running_jobs.append((node.schedule_set.filter(status='S').count(), - stats.memory_available,
+                                 stats.cpu_used_percent))
         best = min(running_jobs)
         return nodes[running_jobs.index(best)]
     else:
@@ -70,4 +73,3 @@ def health_check(node, host=None):
         node.state = 'FF'
         node.save()
         reschedule_jobs(node)
-

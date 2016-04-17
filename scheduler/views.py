@@ -135,21 +135,21 @@ def lead_nodes(request):
         host_setializer = NodeSerializer(host_node)
         # print nodes
         for node in nodes:
-            try:
-                node.state = 'RF'
-                node.save()
-                # print node
-                # print "Requesting %s/stats/" % node.get_http_endpoint()
-                response = requests.post(node.get_http_endpoint() + "stats/", data=host_setializer.data)
-                stats_serializer = StatusSerializer(data=response.json())
-                if stats_serializer.is_valid():
-                    stats = stats_serializer.save()
-                else:
-                    return Response(data=stats_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                # print "Requesting %s/follow/me/" % node.get_http_endpoint()
-                response = requests.post(node.get_http_endpoint() + "follow/me/", data=host_setializer.data)
-                if response.status_code != 200:
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-            except:
-                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # try:
+            node.state = 'RF'
+            node.save()
+            # print node
+            # print "Requesting %s/stats/" % node.get_http_endpoint()
+            response = requests.post(node.get_http_endpoint() + "stats/", data=host_setializer.data)
+            stats_serializer = StatusSerializer(data=response.json())
+            if stats_serializer.is_valid():
+                stats = stats_serializer.save()
+            else:
+                return Response(data=stats_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # print "Requesting %s/follow/me/" % node.get_http_endpoint()
+            response = requests.post(node.get_http_endpoint() + "follow/me/", data=host_setializer.data)
+            if response.status_code != 200:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            # except:
+            #     return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(status=status.HTTP_200_OK)

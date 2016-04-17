@@ -40,8 +40,9 @@ class StatusSerializer(serializers.Serializer):
         leader = None
         if 'leader' in validated_data:
             leader_data = validated_data.pop('leader')
-            leader_data.pop('host')
-            leader, created = Node.objects.get_or_create(**leader_data)
+            if leader_data is not None:
+                leader_data.pop('host')
+                leader, created = Node.objects.get_or_create(**leader_data)
         node_data.pop('host')
         node, created = Node.objects.get_or_create(**node_data)
         status = Status.objects.create(node=node, leader=leader, **validated_data)

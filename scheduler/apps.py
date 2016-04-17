@@ -9,4 +9,7 @@ class SchedulerConfig(AppConfig):
     def ready(self):
         import scheduler.signals
         from scheduler.models import Node
-        Node.objects.all().delete()
+        try:
+            Node.objects.all().delete()
+        except:
+            pass
