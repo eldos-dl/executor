@@ -1,7 +1,9 @@
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 
+from rest_framework.authentication import BasicAuthentication, SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -123,34 +125,39 @@ def update_output(request):
 
 
 @api_view(['POST'])
+@authentication_classes((SessionAuthentication, BasicAuthentication))
+@permission_classes((IsAuthenticated,))
 def lead_nodes(request):
     from .serializers import NodeSerializer, StatusSerializer
     from .models import Node
     import requests
-    request_serializer = NodeSerializer(data=request.data, many=True)
-    if request_serializer.is_valid():
-        nodes = request_serializer.save()
-        host_node = Node.objects.get(host=True)
-        host_node.state = 'C'
-        host_node.save()
-        host_setializer = NodeSerializer(host_node)
-        # print nodes
-        for node in nodes:
-            # try:
-            node.state = 'RF'
-            node.save()
-            # print node
-            # print "Requesting %s/stats/" % node.get_http_endpoint()
-            response = requests.post(node.get_http_endpoint() + "stats/", data=host_setializer.data)
-            stats_serializer = StatusSerializer(data=response.json())
-            if stats_serializer.is_valid():
-                stats = stats_serializer.save()
-            else:
-                return Response(data=stats_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            # print "Requesting %s/follow/me/" % node.get_http_endpoint()
-            response = requests.post(node.get_http_endpoint() + "follow/me/", data=host_setializer.data)
-            if response.status_code != 200:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            # except:
-            #     return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response(status=status.HTTP_200_OK)
+    if request.user.is_superuser:
+        request_serializer = NodeSerializer(data=request.data, many=True)
+        if request_serializer.is_valid():
+            nodes = request_serializer.save()
+            host_node = Node.objects.get(host=True)
+            host_node.state = 'C'
+            host_node.save()
+            host_setializer = NodeSerializer(host_node)
+            # print nodes
+            for node in nodes:
+                # try:
+                node.state = 'RF'
+                node.save()
+                # print node
+                # print "Requesting %s/stats/" % node.get_http_endpoint()
+                response = requests.post(node.get_http_endpoint() + "stats/", data=host_setializer.data)
+                stats_serializer = StatusSerializer(data=response.json())
+                if stats_serializer.is_valid():
+                    stats = stats_serializer.save()
+                else:
+                    return Response(data=stats_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # print "Requesting %s/follow/me/" % node.get_http_endpoint()
+                response = requests.post(node.get_http_endpoint() + "follow/me/", data=host_setializer.data)
+                if response.status_code != 200:
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+                # except:
+                #     return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_403_FORBIDDEN)
