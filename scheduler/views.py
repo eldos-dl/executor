@@ -58,7 +58,7 @@ def follow_me(request):
                 follower.save()
                 leader.state = 'HL'
                 leader.save()
-                print "Following Node " + str(leader)
+                print "Following Node " + leader.get_http_endpoint()
         except:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(leader_serializer.data, status=status.HTTP_200_OK)
@@ -72,10 +72,10 @@ def confirm_follower(request):
     follower_serializer = NodeSerializer(data=request.data)
     if follower_serializer.is_valid():
         follower_node = follower_serializer.save()
-        if follower_node.state == 'RF':
+        if follower_node.state in ['RF', 'FF']:
             follower_node.state = 'HF'
             follower_node.save()
-            print "Leading Node " + str(follower_node)
+            print "Leading Node " + follower_node.get_http_endpoint()
             return Response({'msg': 'CONFIRMED'}, status=status.HTTP_202_ACCEPTED)
         else:
             return Response({'msg': 'DENIED'}, status=status.HTTP_406_NOT_ACCEPTABLE)

@@ -17,6 +17,8 @@ def select_slave_node():
             print stats
             running_jobs.append((node.schedule_set.filter(status='S').count(), - stats.memory_available,
                                  stats.cpu_used_percent))
+            print stats
+            print running_jobs
         best = min(running_jobs)
         return nodes[running_jobs.index(best)]
     else:
@@ -28,10 +30,15 @@ def reschedule_jobs(node):
     from ui.models import Schedule
     from ui.serializers import ExecutionRequestSerializer
     from ui.types import ExecutionRequestType
-    running_job_list = Schedule.objects.filter(node=node, status='S')
+    running_job_list = Schedule.objects.filter(node=node, status__in=['S', 'W', 'F'])
+    print "Running Jobs"
+    print running_job_list
     for job in running_job_list:
         node = select_slave_node()
+        print "Selected Node to ReSchedule"
+        print node.get_http_endpoint()
         job.node = node
+        job.save()
         files = [(job.executable.name.split('/')[-1], job.executable.file.file),
                  (job.input_file.name.split('/')[-1], job.input_file.file.file)]
         url = "http://%s:%d/execute/" % (node.ip, node.port)
@@ -41,7 +48,7 @@ def reschedule_jobs(node):
                                  memory_limit=job.memory_limit))
         r = requests.post(url, files=files, data=execution_request_serializer.data)
         if r.status_code == 202:
-            # print "job delivered"
+            print "job delivered"
             job.status = 'S'
             job.save()
         else:
@@ -68,8 +75,10 @@ def health_check(node, host=None):
         else:
             node.state = 'FF'
             node.save()
+            print node.get_http_endpoint()
             reschedule_jobs(node)
     else:
         node.state = 'FF'
         node.save()
+        print node.get_http_endpoint()
         reschedule_jobs(node)

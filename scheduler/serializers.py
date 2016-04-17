@@ -45,7 +45,13 @@ class StatusSerializer(serializers.Serializer):
                 leader, created = Node.objects.get_or_create(**leader_data)
         node_data.pop('host')
         node, created = Node.objects.get_or_create(**node_data)
-        status = Status.objects.create(node=node, leader=leader, **validated_data)
+        try:
+            status = Status.objects.get(node=node)
+        except:
+            status = Status.objects.create(node=node)
+        status.leader = leader
+        status.save()
+        Status.objects.filter(id=status.id).update(**validated_data)
         return status
 
 

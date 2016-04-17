@@ -256,3 +256,11 @@ pre {
     right: 18px;
     top: 18px;
 }
+
+.status-highlight {
+    background-color: rgb(0, 102, 152);
+    color: rgb(255, 255, 255);
+    padding: 3px;
+    border-radius: 6px;
+    font-size: 11px;
+}

@@ -105,8 +105,9 @@
                 <div class="col-md-6 bold text-left" style="overflow: hidden; text-overflow: ellipsis;">
                     <span style="padding-left: 50px; white-space: nowrap;" >{{ schedule.id }}</span>
                 </div>
+                <div class="col-md-2 light"><span class="status-highlight">{{ scheduleStatus[schedule.status] }}</span></div>
+                <div class="col-md-2 light"><span class="status-highlight">{{ schedule.node.ip }}:{{ schedule.node.port }}</span></div>
                 <div class="col-md-1 light">{{ schedule.time_taken }}s</div>
-                <div class="col-md-1 light">{{ schedule.status }}</div>
                 <div class="col-md-1 light text-center">{{ schedule.memory_used | bytes }}</div>
             </div>
             <div style="background-color: rgba(0,0,0,0.8)" class="fullscreen" ng-show="diff.length!=0"></div>
