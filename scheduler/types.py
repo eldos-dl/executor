@@ -2,8 +2,9 @@ __author__ = 'eldos'
 
 
 class StatusType(object):
-    def __init__(self, node=None, **kwargs):
+    def __init__(self, node=None, leader=None, **kwargs):
         self.node = node
+        self.leader = leader
         if kwargs:
             self.memory_total = kwargs['memory_total']
             self.memory_available = kwargs['memory_available']

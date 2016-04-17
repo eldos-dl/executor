@@ -149,7 +149,7 @@ def debug_request(request):
 @authentication_classes((SessionAuthentication, BasicAuthentication))
 @permission_classes((IsAuthenticated,))
 def scheduler(request):
-    from scheduler.utils import select_slave_node
+    from scheduler.utils import select_slave_node, health_check
     from .serializers import ScheduleSerializer, ScheduleResponseSerializer, ExecutionRequestSerializer
     from .types import ExecutionRequestType
     import requests
@@ -178,6 +178,7 @@ def scheduler(request):
         else:
             scheduler.status = 'F'
             schedule.save()
+            health_check(node)
             print "error" + str(r.status_code)
             return Response({'msg': 'UNABLE to deliver the job to slave'}, status=status.HTTP_406_NOT_ACCEPTABLE)
     else:

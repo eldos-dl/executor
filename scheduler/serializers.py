@@ -32,13 +32,19 @@ class StatusSerializer(serializers.Serializer):
     cpu_used_percent = serializers.FloatField()
     cpu_idle_percent = serializers.FloatField()
     node = NodeSerializer(many=False)
+    leader = NodeSerializer(many=False, required=False, allow_null=True)
 
     def create(self, validated_data):
         from .models import Status, Node
         node_data = validated_data.pop('node')
+        leader = None
+        if 'leader' in validated_data:
+            leader_data = validated_data.pop('leader')
+            leader_data.pop('host')
+            leader, created = Node.objects.get_or_create(**leader_data)
         node_data.pop('host')
         node, created = Node.objects.get_or_create(**node_data)
-        status = Status.objects.create(node=node, **validated_data)
+        status = Status.objects.create(node=node, leader=leader, **validated_data)
         return status
 
 

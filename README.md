@@ -18,8 +18,14 @@ sudo python get-pip.py
 sudo -H pip install -r requirements.txt
 ```
 
-## Starting Development Server
+## Starting Development Server without automatic code reloading
 
 ```
-python manage.py runserver 0.0.0.0:8000
+python manage.py runserver 0.0.0.0:8000 --noreload
+```
+
+## Starting Scheduler (in leader server only)
+
+```
+celery -A executor worker -B
 ```

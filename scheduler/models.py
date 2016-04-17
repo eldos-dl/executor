@@ -32,7 +32,8 @@ class Status(models.Model):
     cpu_used_percent = models.FloatField(default=0.0)
     cpu_idle_percent = models.FloatField(default=0.0)
     last_updated = models.DateTimeField(auto_now=True)
-    node = models.ForeignKey(to=Node, null=True, blank=True)
+    node = models.ForeignKey(to=Node, null=True, blank=True, related_name='nodes')
+    leader = models.ForeignKey(to=Node, null=True, blank=True, related_name='leaders')
 
 
 def exec_directory_path(instance, filename):

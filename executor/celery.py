@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from datetime import timedelta
 
 import os
 
@@ -13,7 +14,7 @@ app.conf.update(
     CELERYBEAT_SCHEDULE={
         'heartbeat': {
             'task': 'scheduler.tasks.heart_beat',
-            'schedule': crontab(minute='*')
+            'schedule': timedelta(seconds=30)
         }
     },
     CELERY_IMPORTS=('scheduler.tasks',)

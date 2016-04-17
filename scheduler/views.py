@@ -30,7 +30,11 @@ def get_stats(request):
             host = node_serializer.save()
         else:
             return Response(node_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    response_serializer = StatusSerializer(StatusType(node=host))
+    try:
+        leader = Node.objects.get(state='HL')
+    except:
+        leader = None
+    response_serializer = StatusSerializer(StatusType(node=host, leader=leader))
     return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
@@ -54,6 +58,7 @@ def follow_me(request):
                 follower.save()
                 leader.state = 'HL'
                 leader.save()
+                print "Following Node " + str(leader)
         except:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(leader_serializer.data, status=status.HTTP_200_OK)
@@ -70,6 +75,7 @@ def confirm_follower(request):
         if follower_node.state == 'RF':
             follower_node.state = 'HF'
             follower_node.save()
+            print "Leading Node " + str(follower_node)
             return Response({'msg': 'CONFIRMED'}, status=status.HTTP_202_ACCEPTED)
         else:
             return Response({'msg': 'DENIED'}, status=status.HTTP_406_NOT_ACCEPTABLE)

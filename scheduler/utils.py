@@ -45,3 +45,29 @@ def reschedule_jobs(node):
             job.status = 'F'
             job.save()
             print "error" + str(r.status_code)
+
+
+def health_check(node, host=None):
+    import requests
+    from .serializers import StatusSerializer, NodeSerializer
+    from .models import Node
+    if host is None:
+        host_node = Node.objects.get(host=True)
+    response = requests.get(node.get_http_endpoint() + "stats/")
+    if response.status_code == 200:
+        response_serializer = StatusSerializer(data=response.json())
+        if response_serializer.is_valid():
+            stats = response_serializer.save()
+            if stats.leader is None or stats.leader != host_node:
+                reschedule_jobs(node)
+                host_setializer = NodeSerializer(host_node)
+                response = requests.post(node.get_http_endpoint() + "follow/me/", data=host_setializer.data)
+        else:
+            node.state = 'FF'
+            node.save()
+            reschedule_jobs(node)
+    else:
+        node.state = 'FF'
+        node.save()
+        reschedule_jobs(node)
+
