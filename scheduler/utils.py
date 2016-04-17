@@ -15,7 +15,7 @@ def select_slave_node():
             print node
             stats = Status.objects.get(node=node)
             print stats
-            running_jobs.append((node.schedule_set.filter(status='S').count(), - stats.memory_available,
+            running_jobs.append((node.schedule_set.filter(status__in=['S', 'W', 'F']).count(), - stats.memory_available,
                                  stats.cpu_used_percent))
             print stats
             print running_jobs
@@ -23,6 +23,7 @@ def select_slave_node():
         return nodes[running_jobs.index(best)]
     else:
         return Node.objects.get(host=True)
+    
 
 
 def reschedule_jobs(node):
