@@ -56,7 +56,7 @@
                         </li>
                         <li><a ng-click="schedule_execution()">Execute</a></li>
                         <li><a ng-click="delete_files()">Delete</a></li>
-                        <li><a ng-click="">Diff</a></li>
+                        <li><a ng-click="diff_files()">Diff</a></li>
                     </ul>
                 </div>
             </div>
@@ -108,6 +108,15 @@
                 <div class="col-md-1 light">{{ schedule.time_taken }}s</div>
                 <div class="col-md-1 light">{{ schedule.status }}</div>
                 <div class="col-md-1 light text-center">{{ schedule.memory_used | bytes }}</div>
+            </div>
+            <div style="background-color: rgba(0,0,0,0.8)" class="fullscreen" ng-show="diff.length!=0"></div>
+            <div class="mid">
+                <div ng-show="diff.length!=0" class="diff">
+                    <div style="background-color: rgb(247, 247, 247);width: 1148px;height:50px;" class="dialog" ng-show="diff.length!=0">
+                        <i class="fa fa-times" aria-hidden="true" ng-click="diff.length=0;"></i>
+                    </div>
+                    <pre ng-repeat="chunk in diff track by $index" ng-class="color[chunk.delta]">{{ chunk.line }}</pre>
+                </div>
             </div>
         </div>
     </div>

@@ -203,17 +203,25 @@ def get_my_schedules(request):
 @authentication_classes((SessionAuthentication, BasicAuthentication))
 @permission_classes((IsAuthenticated,))
 def diff_files(request):
-    from diff_match_patch import diff_match_patch
+    from difflib import Differ
+    differ = Differ()
     from .serializers import DiffRequestSerializer, DiffSerializer
     request_serializer = DiffRequestSerializer(data=request.data, context={'user_id': request.user.id})
     if request_serializer.is_valid():
         try:
             old_file, new_file = request_serializer.get_files()
-            differ = diff_match_patch()
-            diff = differ.diff_lineMode(old_file, new_file, 0)
+            lines = list(differ.compare(old_file.splitlines(1), new_file.splitlines(1)))
             lines_diff = []
-            for delta in diff:
-                lines_diff.append({"delta": delta[0], "lines": delta[1].splitlines(1)})
+            for line in lines:
+                if line[0] == ' ':
+                    delta = 0
+                elif line[0] == '+':
+                    delta = 1
+                elif line[0] == '-':
+                    delta = -1
+                else:
+                    continue
+                lines_diff.append({"delta": delta, "line": line.rstrip('\n')})
             response_serializer = DiffSerializer(data=lines_diff, many=True)
             if response_serializer.is_valid():
                 return Response(data=response_serializer.validated_data, status=status.HTTP_200_OK)

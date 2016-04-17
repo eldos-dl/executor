@@ -107,5 +107,4 @@ class UserFileRequestSerializer(serializers.Serializer):
 
 class DiffSerializer(serializers.Serializer):
     delta = serializers.IntegerField()
-    lines = serializers.ListField(child=serializers.CharField(allow_blank=True, trim_whitespace=False), required=False,
-                                  allow_empty=True)
+    line = serializers.CharField(allow_blank=True, trim_whitespace=False)

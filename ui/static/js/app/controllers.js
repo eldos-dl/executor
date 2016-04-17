@@ -18,7 +18,6 @@
                     }, function (response) {
                         if (response.status > 0)
                             $scope.errorMsg = response.status + ': ' + response.data;
-                            console.log(response.config.data);
                     }, function (evt) {
                         file.progress = Math.min(100, parseInt(100.0 *
                             evt.loaded / evt.total));
@@ -34,6 +33,8 @@
             $scope.selected = 0;
             $scope.relation = {};
             $scope.schedules = [];
+            $scope.diff = [];
+            $scope.color = {"-1": "red", "0": "white", "1": "green"};
             $scope.update_relation = function() {
                 $scope.relation = {};
                 for (key in $scope.userFiles) {
@@ -76,6 +77,15 @@
                         $scope.update_relation();
                     }
                 });
+            };
+            $scope.diff_files = function() {
+                if ($scope.selectedFiles.length >= 2) {
+                   $http.post('/diff/', {"old_source": $scope.selectedFiles[0], "new_source": $scope.selectedFiles[1]}).then(function (response) {
+                    console.log(response);
+                    $scope.diff = response.data;
+                    console.log($scope.diff);
+                });
+                }
             };
             $scope.switch_selection = function (file) {
                 if (file.type == 'E' && file.selected==false) {
